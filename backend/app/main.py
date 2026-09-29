@@ -1,8 +1,34 @@
 import os
+import sys
+import shutil
 import sqlite3
+
+# Fix sys.path for Vercel Serverless environment
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BACKEND_DIR = os.path.dirname(CURRENT_DIR)
+ROOT_DIR = os.path.dirname(BACKEND_DIR)
+
+for path in [BACKEND_DIR, CURRENT_DIR, ROOT_DIR]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+# Setup writable SQLite DB in /tmp for Vercel
+if os.getenv("VERCEL") or os.path.exists("/tmp"):
+    tmp_db = "/tmp/i95dev.db"
+    orig_db = os.path.join(BACKEND_DIR, "data", "i95dev.db")
+    if not os.path.exists(tmp_db) and os.path.exists(orig_db):
+        try:
+            shutil.copyfile(orig_db, tmp_db)
+        except Exception as e:
+            print(f"Error copying DB to /tmp: {e}")
+    if os.path.exists(tmp_db):
+        os.environ["SQLITE_DB_PATH"] = tmp_db
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.database import init_db, get_db_connection, DB_PATH
@@ -102,6 +128,34 @@ def health_check():
         "database_connected": os.path.exists(DB_PATH)
     }
 
+# Mount static frontend build
+dist_candidates = [
+    os.path.join(ROOT_DIR, "dist"),
+    os.path.join(ROOT_DIR, "frontend", "dist"),
+    os.path.join(CURRENT_DIR, "dist"),
+    os.path.join(BACKEND_DIR, "dist"),
+]
+dist_dir = None
+for candidate in dist_candidates:
+    if os.path.exists(os.path.join(candidate, "index.html")):
+        dist_dir = candidate
+        break
+
+if dist_dir:
+    assets_dir = os.path.join(dist_dir, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str = ""):
+        if full_path.startswith("api/") or full_path == "api":
+            return {"error": "Not Found", "status": 404}
+        file_path = os.path.join(dist_dir, full_path)
+        if full_path and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(dist_dir, "index.html"))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+

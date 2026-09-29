@@ -3,9 +3,6 @@ import sqlite3
 import json
 import pandas as pd
 import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import silhouette_score
 from app.database import get_db_connection
 
 CLUSTERING_FEATURES = [
@@ -19,6 +16,63 @@ CLUSTERING_FEATURES = [
     'retention_risk_score'
 ]
 
+# Native lightweight clustering implementation (zero scipy/sklearn dependencies for ultra-fast serverless execution)
+def custom_standard_scaler(X):
+    mean = np.mean(X, axis=0)
+    std = np.std(X, axis=0)
+    std = np.where(std == 0, 1.0, std)
+    return (X - mean) / std
+
+def custom_kmeans(X, k=5, max_iter=100, random_state=42):
+    rng = np.random.RandomState(random_state)
+    n_samples, n_features = X.shape
+    centers = [X[rng.choice(n_samples)]]
+    for _ in range(1, k):
+        dist_sq = np.min([np.sum((X - c) ** 2, axis=1) for c in centers], axis=0)
+        sum_sq = np.sum(dist_sq)
+        probs = dist_sq / sum_sq if sum_sq > 0 else np.ones(n_samples) / n_samples
+        centers.append(X[rng.choice(n_samples, p=probs)])
+    centers = np.array(centers)
+
+    labels = np.zeros(n_samples, dtype=int)
+    for _ in range(max_iter):
+        dists = np.linalg.norm(X[:, np.newaxis, :] - centers[np.newaxis, :, :], axis=2)
+        new_labels = np.argmin(dists, axis=1)
+        if np.array_equal(labels, new_labels):
+            break
+        labels = new_labels
+        for j in range(k):
+            mask = (labels == j)
+            if np.any(mask):
+                centers[j] = np.mean(X[mask], axis=0)
+    return labels
+
+def custom_silhouette_score(X, labels):
+    n_samples = len(X)
+    sample_size = min(300, n_samples)
+    indices = np.random.RandomState(42).choice(n_samples, sample_size, replace=False)
+    X_sub = X[indices]
+    labels_sub = labels[indices]
+    unique_labels = np.unique(labels_sub)
+    if len(unique_labels) < 2:
+        return 0.5
+    scores = []
+    for i in range(len(X_sub)):
+        same = (labels_sub == labels_sub[i])
+        if np.sum(same) <= 1:
+            scores.append(0.0)
+            continue
+        a_i = np.mean(np.linalg.norm(X_sub[same] - X_sub[i], axis=1))
+        b_i = np.inf
+        for other in unique_labels:
+            if other != labels_sub[i]:
+                diff = (labels_sub == other)
+                if np.any(diff):
+                    b_i = min(b_i, np.mean(np.linalg.norm(X_sub[diff] - X_sub[i], axis=1)))
+        max_ab = max(a_i, b_i)
+        scores.append((b_i - a_i) / max_ab if max_ab > 0 else 0.0)
+    return round(float(np.mean(scores)), 3)
+
 def run_kmeans_clustering(k: int = 5):
     conn = get_db_connection()
     df = pd.read_sql_query("SELECT * FROM customer_analytical_features", conn)
@@ -27,19 +81,17 @@ def run_kmeans_clustering(k: int = 5):
         conn.close()
         return {"error": "No analytical features found. Run feature engineering first."}
 
-    X = df[CLUSTERING_FEATURES].copy()
+    X = df[CLUSTERING_FEATURES].to_numpy()
     
     # Scale features
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    X_scaled = custom_standard_scaler(X)
 
     # Run KMeans with fixed seed for reproducibility
-    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-    labels = kmeans.fit_predict(X_scaled)
+    labels = custom_kmeans(X_scaled, k=k, random_state=42)
     df['cluster_id'] = labels
 
     # Calculate Silhouette Score
-    score = round(float(silhouette_score(X_scaled, labels)), 3)
+    score = custom_silhouette_score(X_scaled, labels)
 
     # Analyze Cluster Characteristics to dynamically assign meaningful, data-driven labels
     cluster_stats = []
