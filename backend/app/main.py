@@ -48,13 +48,16 @@ async def lifespan(app: FastAPI):
         # Ensure clusters are computed
         get_current_clustering()
 
-    # Start background scheduler
-    try:
-        scheduler.add_job(scheduled_automation_tick, 'interval', minutes=10, id='automation_tick', replace_existing=True)
-        scheduler.start()
-        print("Background automation scheduler started (10-minute heartbeat).")
-    except Exception as e:
-        print(f"Failed to start scheduler: {e}")
+    # Start background scheduler if not in serverless runtime
+    if not os.getenv("VERCEL"):
+        try:
+            scheduler.add_job(scheduled_automation_tick, 'interval', minutes=10, id='automation_tick', replace_existing=True)
+            scheduler.start()
+            print("Background automation scheduler started (10-minute heartbeat).")
+        except Exception as e:
+            print(f"Failed to start scheduler: {e}")
+    else:
+        print("Running in serverless environment - background scheduler disabled.")
 
     yield
 
