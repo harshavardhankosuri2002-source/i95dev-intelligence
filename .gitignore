@@ -5,14 +5,10 @@ env/
 __pycache__/
 *.pyc
 
-# Build outputs
-dist/
-build/
-.pytest_cache/
-
-# Local data cache
+# Local data cache & temp
 backend/data/*.csv
 backend/data/*.db-journal
+.pytest_cache/
 
 # Environment & secrets
 .env
