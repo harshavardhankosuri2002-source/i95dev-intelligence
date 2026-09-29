@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#F8FAFC] text-slate-900;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Glass & Card styles */
+.saas-card {
+  @apply bg-white border border-slate-200/80 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-200;
+}
+
+.saas-card:hover {
+  @apply shadow-[0_4px_12px_rgba(0,0,0,0.05)];
+}
+
+.saas-badge-blue {
+  @apply bg-blue-50 text-blue-700 border border-blue-200/60 font-medium;
+}
+
+.saas-badge-emerald {
+  @apply bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-medium;
+}
+
+.saas-badge-amber {
+  @apply bg-amber-50 text-amber-700 border border-amber-200/60 font-medium;
+}
+
+.saas-badge-rose {
+  @apply bg-rose-50 text-rose-700 border border-rose-200/60 font-medium;
+}
+
+.saas-badge-purple {
+  @apply bg-purple-50 text-purple-700 border border-purple-200/60 font-medium;
+}
+
+/* Subtle table row hover */
+.table-row-hover:hover {
+  background-color: #F8FAFC;
+}

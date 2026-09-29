@@ -1,0 +1,92 @@
+{
+  "customers": {
+    "description": "Primary B2B account master table with firmographics, consent, and assigned AM.",
+    "fields": {
+      "customer_id": "Unique primary identifier (CUST-XXXX)",
+      "company_name": "Synthetic fictional enterprise company name",
+      "industry": "Industry vertical (Manufacturing, Distribution, Healthcare, etc.)",
+      "company_size": "Employee headcount classification (SMB, Mid-Market, Enterprise)",
+      "region": "Geographic territory across Americas, Europe, APAC",
+      "lead_source": "Origination channel (ERP Referral, Summit, Organic, ABM)",
+      "account_type": "Relationship lifecycle (Prospect, Active Client, Dormant)",
+      "acquisition_date": "Date account record was created in CRM",
+      "assigned_account_manager": "Dedicated i95Dev client executive",
+      "consent_email": "Channel opt-in consent flag (1 = Consented, 0 = Suppressed)",
+      "consent_whatsapp": "WhatsApp opt-in consent flag (1 = Consented, 0 = Suppressed)",
+      "preferred_channel": "Customer preferred channel of communication",
+      "account_status": "Current operational status"
+    }
+  },
+  "transactions": {
+    "description": "Historical contract and project billing records for i95Dev services.",
+    "fields": {
+      "transaction_id": "Unique transaction key (TX-XXXX-X)",
+      "customer_id": "Foreign key reference to customers",
+      "transaction_date": "Booking or invoice date",
+      "service_category": "Delivered service type (ERP integration, Adobe Commerce, Portal, Managed Retainer)",
+      "project_value": "Financial value in USD ($)",
+      "contract_status": "State of contract (Completed, Active Retainer, Expired)",
+      "renewal_date": "Next upcoming retainer renewal date if active",
+      "repeat_purchase_count": "Cumulative purchases count prior to this deal"
+    }
+  },
+  "sales_interactions": {
+    "description": "Granular touchpoint logs across email, whatsapp, meetings, and demos.",
+    "fields": {
+      "interaction_id": "Unique touchpoint identifier (INT-XXXX-X)",
+      "customer_id": "Foreign key reference to customers",
+      "interaction_date": "Date of communication",
+      "channel": "Interaction mode (Email, WhatsApp, Zoom/Teams, Phone)",
+      "interaction_type": "Touchpoint category (Discovery, Tech Review, Proposal, Demo)",
+      "email_response": "1 if client opened & replied, 0 otherwise",
+      "meeting_attended": "1 if scheduled meeting was attended",
+      "demo_attended": "1 if live technical integration demo took place",
+      "proposal_sent": "1 if formal RFP/SOW proposal was delivered",
+      "days_since_last_interaction": "Days elapsed since previous touchpoint",
+      "interaction_outcome": "Recorded milestone or sales disposition"
+    }
+  },
+  "support_tickets": {
+    "description": "Technical support, integration maintenance, and SLA resolution tracking.",
+    "fields": {
+      "ticket_id": "Unique support case ID (TCK-XXXX-X)",
+      "customer_id": "Foreign key reference to customers",
+      "issue_category": "Integration domain issue (Sync latency, Webhook, Auth, Pricing rule)",
+      "priority": "Severity tier (Critical, High, Medium, Low)",
+      "created_date": "Timestamp ticket opened",
+      "resolved_date": "Timestamp ticket closed",
+      "resolution_time_hours": "Turnaround time in hours",
+      "customer_satisfaction": "Post-resolution CSAT score (1.0 to 5.0)",
+      "ticket_status": "Current case status (Resolved, Closed, In Progress, Escalated)"
+    }
+  },
+  "pipeline_opportunities": {
+    "description": "Current and past commercial opportunities in sales pipeline.",
+    "fields": {
+      "opportunity_id": "Opportunity record ID (OPP-XXXX-X)",
+      "customer_id": "Foreign key reference to customers",
+      "opportunity_value": "Estimated contract value in USD ($)",
+      "sales_stage": "Stage (Discovery, Tech Review, Solution Design, Proposal Sent, Negotiation, Closed)",
+      "proposal_date": "Date commercial proposal was shared",
+      "last_activity_date": "Most recent sales engagement date",
+      "outcome": "Disposition (Open, Won, Lost)",
+      "lost_reason": "Structured rationale for lost opportunities"
+    }
+  },
+  "message_campaign_logs": {
+    "description": "Complete audit trail of simulated automated follow-ups, statuses, and simulated customer reactions.",
+    "fields": {
+      "message_id": "Message execution record ID",
+      "customer_id": "Foreign key reference to customers",
+      "campaign_id": "Associated campaign or trigger code",
+      "channel": "Delivered channel (Email, WhatsApp)",
+      "trigger_reason": "Rule or behavioral anomaly that fired the message",
+      "generated_message": "Rendered message content with customer context",
+      "scheduled_at": "Timestamp queued or scheduled",
+      "simulated_status": "Simulated lifecycle status (Queued, Scheduled, Sent, Replied, Converted, Suppressed)",
+      "simulated_reply": "Simulated client feedback text",
+      "conversion_outcome": "Subsequent conversion result",
+      "opt_out_status": "1 if client opted out or was suppressed"
+    }
+  }
+}
