@@ -1,0 +1,9 @@
+{
+  "name": "i95dev-intelligence",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "install:all": "npm install --prefix frontend"
+  }
+}

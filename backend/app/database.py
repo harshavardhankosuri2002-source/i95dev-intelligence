@@ -3,7 +3,10 @@ import sqlite3
 from typing import Dict, Any, List, Optional
 import json
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "i95dev.db")
+DB_PATH = os.environ.get(
+    "SQLITE_DB_PATH",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "i95dev.db")
+)
 
 def get_db_connection() -> sqlite3.Connection:
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
